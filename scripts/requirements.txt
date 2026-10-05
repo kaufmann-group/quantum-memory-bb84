@@ -1,0 +1,11 @@
+numpy
+qiskit
+matplotlib
+ipykernel
+jupyter
+notebook
+
+qutip
+qiskit-aer
+pylatexenc
+
