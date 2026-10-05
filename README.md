@@ -4,4 +4,4 @@ In quantum cryptography, the foundational quantum key exchange protocol is calle
 
 ## References
 
-This work was created by [Esha Sury](mailto:esury@purdue.edu) and [Dhruv Upreti](mailto:dupreti@purdue.edu). Mentorship was given by [Birgit Kaufmann](mailto:ebkaufma@purdue.edu), funding was provided by [Discovery Undergraduate Interdisciplinary Research Internship](https://www.purdue.edu/discoverypark/duri/) program. 
+This work was created by [William Huang](mailto:huan2172@purdue.edu), [Esha Sury](mailto:esury@purdue.edu) and [Dhruv Upreti](mailto:dupreti@purdue.edu). Mentorship was given by [Birgit Kaufmann](mailto:ebkaufma@purdue.edu), funding was provided by [Discovery Undergraduate Interdisciplinary Research Internship](https://www.purdue.edu/discoverypark/duri/) program. 
