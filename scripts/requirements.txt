@@ -6,6 +6,7 @@ jupyter
 notebook
 
 qutip
+qutip-qip
 qiskit-aer
 pylatexenc
 
