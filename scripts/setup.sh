@@ -7,6 +7,16 @@ cd "$REPO"
 set -a
 source .env
 set +a
+<<<<<<< Updated upstream
+=======
+
+if ! git remote | grep -q 'overleaf'; then
+    git remote add overleaf "https://git@git.overleaf.com/$OVERLEAF_ID"
+    echo "Added Overleaf remote."
+else
+    echo "Overleaf remote exists"
+fi
+>>>>>>> Stashed changes
 
 if ! git remote | grep -q 'overleaf'; then
     git remote add overleaf "https://git@git.overleaf.com/$OVERLEAF_ID"
