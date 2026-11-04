@@ -9,7 +9,9 @@ pytest
 
 qutip
 qutip-qip
+qiskit
 qiskit-aer
+qiskit[visualization]
 pylatexenc
 cryptography
 

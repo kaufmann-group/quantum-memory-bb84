@@ -39,6 +39,7 @@ class RegisterEvent:
     outcome: int | None = None  # measurement result (measurements only)
     erased: bool = False        # True when a measurement found the photon lost
     controls: int = 0  # The first `controls` entries of targets are control wires.
+    basis: str | float | None = None  # measurement basis: "Z", "X", an angle, or None for projectors
 
 
 class QuantumRegister:
@@ -434,13 +435,21 @@ class QuantumRegister:
         if name is not None:
             label = name
 
+        # The exact basis lets the drawing rotate into it (and resend from it after an intercept).
+        if isinstance(basis, str):
+            drawn_basis = str(basis)
+        elif np.isscalar(basis):
+            drawn_basis = float(basis)
+        else:
+            drawn_basis = None
+
         # The photon was lost if the outcome is the erasure projector |e><e|.
         erased = len(targets) == 1 and targets[0] in self.erasure_levels and (
             projectors[outcome] - _ERASED
         ).norm() < 1e-9
 
         self.history.append(RegisterEvent("measure", label, tuple(targets), tuple(dims), tuple(dims),
-                                          outcome, bool(erased)))
+                                          outcome, bool(erased), basis=drawn_basis))
         return outcome
 
     def reduced(self, targets="B"):
@@ -479,7 +488,7 @@ class QuantumRegister:
         return self
 
     def mark_region(self, name):
-        """Start a new titled panel in the drawing (see circuit_display)."""
+        """Start a new titled region in the drawing, drawn as a barrier (see circuit_display)."""
         self.history.append(RegisterEvent("region", name, ()))
 
     def annotate(self, name, targets="B"):
@@ -488,7 +497,12 @@ class QuantumRegister:
         self.history.append(RegisterEvent("note", name, tuple(targets)))
         return self
 
-    def display(self, theme="qutip", dpi=300, save_path=None, show=True, title=None):
-        """Draw the operation history with QuTiP and return its Matplotlib Figure."""
+    def display(self, theme="iqp", dpi=300, save_path=None, show=True, title=None):
+        """Draw the operation history as a Qiskit circuit and return its Matplotlib Figure.
+
+        QuTiP still computes everything; Qiskit only draws. theme is a Qiskit
+        style ("iqp", "iqp-dark", "clifford", "textbook", "bw" or a style dict);
+        QuTiP's theme names ("qutip", "light", "dark", "modern") still work.
+        """
         from .circuit_display import draw_register
         return draw_register(self, theme=theme, dpi=dpi, save_path=save_path, show=show, title=title)
