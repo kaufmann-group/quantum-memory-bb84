@@ -4,9 +4,18 @@ set -e
 REPO=$(git rev-parse --show-toplevel)
 cd "$REPO"
 
-rm -rf "$REPO/.venv"
+set -a
+source .env
+set +a
 
-python3.11 -m venv "$REPO/.venv"
+if ! git remote | grep -q 'overleaf'; then
+    git remote add overleaf "https://git@git.overleaf.com/$OVERLEAF_ID"
+    echo "Added Overleaf remote."
+else
+    echo "Overleaf remote exists"
+fi
+
+python3 -m venv "$REPO/.venv"
 source "$REPO/.venv/bin/activate"
 
 python -m pip install --upgrade pip

@@ -5,8 +5,11 @@ ipykernel
 jupyter
 notebook
 
+pytest
+
 qutip
 qutip-qip
 qiskit-aer
 pylatexenc
+cryptography
 

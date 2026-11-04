@@ -1,0 +1,44 @@
+"""Generalized amplitude damping with the Zoo's gamma, N convention.
+
+Source: https://quantumchannelzoo.org/channel/generalized_amplitude
+gamma in [0, 1] controls relaxation; N in [0, 1] is the equilibrium
+excited-state population, NOT the ground-state population.
+The excited population evolves as rho11 -> (1-gamma)*rho11 + gamma*N.
+N=0 recovers amplitude damping. gamma=1 resets to diag(1-N, N).
+
+Usage: GeneralizedAmplitudeDamping(gamma=0.2, N=0.1).apply(register, "E")
+"""
+
+from math import sqrt
+from numbers import Real
+
+from qutip import Qobj
+
+from .channels import QuantumChannel
+
+__all__ = ["GeneralizedAmplitudeDamping"]
+
+
+class GeneralizedAmplitudeDamping(QuantumChannel):
+    """A_{gamma,N}, using all four Kraus operators from the source."""
+
+    num_targets = 1
+    input_dim = output_dim = 2
+
+    def __init__(self, gamma, N):
+        for name, value in (("gamma", gamma), ("N", N)):
+            if isinstance(value, bool) or not isinstance(value, Real) or not 0 <= value <= 1:
+                raise ValueError(f"{name} must be a finite real number in [0, 1]")
+        self.gamma = float(gamma)
+        self.N = float(N)
+
+    def kraus_operators(self):
+        survival = sqrt(1 - self.gamma)
+        return [
+            # With weight 1-N: amplitude damping toward |0>.
+            sqrt(1 - self.N) * Qobj([[1, 0], [0, survival]]),
+            Qobj([[0, sqrt(self.gamma * (1 - self.N))], [0, 0]]),  # |1> -> |0>
+            # With weight N: the mirror image, pumping toward |1>.
+            sqrt(self.N) * Qobj([[survival, 0], [0, 1]]),
+            Qobj([[0, 0], [sqrt(self.gamma * self.N), 0]]),  # |0> -> |1>
+        ]
