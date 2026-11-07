@@ -1,4 +1,4 @@
-"""Intercept-resend attack: Eve measures the signal and forwards the collapsed state."""
+import secrets
 
 import numpy as np
 from qutip import basis
@@ -8,13 +8,37 @@ from ..utils.quantum_register import ERASURE, UNKNOWN, QuantumRegister
 
 
 class InterceptResendAttack(Attack):
-    """Eve measures the signal in a basis chosen uniformly from `bases` and resends.
+    """Intercept-resend attack.
 
-    bases defaults to BB84's ("Z", "X"). For E91, Eve may instead use the
-    protocol's key angles, e.g. InterceptResendAttack(bases=(np.pi/4, np.pi/2)).
+    Eve measures each signal in a basis chosen uniformly from `bases` and
+    resends the state she found, for both BB84 and E91.
+
+    bases defaults to BB84's ("Z", "X"). For E91 Eve may instead use the
+    protocol's key angles, e.g. (np.pi/4, np.pi/2). In BB84 a random-basis
+    intercept gives Bob a sifted QBER of 1/4 and Eve 3/4 of the sifted bits.
+
+    Source:
+        C. H. Bennett and G. Brassard, "Quantum cryptography: Public key
+        distribution and coin tossing", Proc. IEEE Int. Conf. on Computers,
+        Systems and Signal Processing, Bangalore, 175-179 (1984); reprinted in
+        Theor. Comput. Sci. 560, 7-11 (2014).
+        https://doi.org/10.1016/j.tcs.2014.05.025
+        For E91: A. K. Ekert, "Quantum cryptography based on Bell's theorem",
+        Phys. Rev. Lett. 67, 661-663 (1991).
+        https://doi.org/10.1103/PhysRevLett.67.661
+
+    Usage:
+        bb84 = BB84(seed=1, number_bits=1000)
+        bb84.key_generation(InterceptResendAttack(seed=43))
+        bb84.qber()                   # about 0.25
+        eve_key = bb84.eve_guesses()  # Eve's measured bit for every sifted round
+
+        e91 = E91(seed=1, number_pairs=1000)
+        e91.key_generation(InterceptResendAttack(bases=(np.pi/4, np.pi/2)))
+        e91.chsh()                    # |S| <= 2: the Bell test reveals Eve
     """
 
-    def __init__(self, seed=43, bases=("Z", "X")):
+    def __init__(self, seed=secrets.randbits(128), bases=("Z", "X")): # bases defaults to BB84's ("Z", "X")
         bases = tuple(bases)
         if not bases or not all(_is_basis(b) for b in bases):
             raise ValueError("bases must be a nonempty list of 'X', 'Z' or finite angles in radians")
@@ -45,8 +69,7 @@ class InterceptResendAttack(Attack):
         kraus = [weight*P for b in self.bases for P in qubit.measurement_projectors("B", b)]
         return register.apply_kraus(kraus, register.signal, name="Intercept-resend (avg)")
 
-    def measure_after_sifting(self, alice_bases, sifted_mask, guess_on_erasure=False,
-                              reference_states=None):
+    def measure_after_sifting(self, alice_bases, sifted_mask, guess_on_erasure=False, reference_states=None):
         """Eve's recorded bits; reference_states is ignored (no quantum probe to optimize)."""
         _, mask = self._sifting_inputs(alice_bases, sifted_mask)
 

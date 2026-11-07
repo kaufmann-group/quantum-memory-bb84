@@ -10,6 +10,7 @@ measurement on the stored probe.
 """
 
 from numbers import Real
+import secrets
 
 import numpy as np
 from qutip import Qobj, basis, qeye
@@ -19,15 +20,36 @@ from ..utils.quantum_register import ERASURE, UNKNOWN
 
 
 class PartialSwapAttack(Attack):
-    """Interact with Eve's |0> probe using exp(-i*theta*SWAP).
+    """Partial-SWAP attack.
+
+    Eve couples a blank |0> probe to the signal with exp(-i*theta*SWAP) =
+    cos(theta)*I - i*sin(theta)*SWAP, which moves part of the signal's state
+    into her probe; after sifting she reads the probe in Alice's basis.
 
     theta=0 leaves the signal unchanged; theta=pi/2 swaps the signal into
     Eve's probe, up to phases. Intermediate angles continuously interpolate.
+
+    Source:
+        The partial-swap interaction is analyzed (as a system-reservoir
+        coupling) in M. Ziman, P. Štelmachovič, V. Bužek, M. Hillery,
+        V. Scarani and N. Gisin, "Diluting quantum information: An analysis
+        of information transfer in system-reservoir interactions",
+        Phys. Rev. A 65, 042105 (2002).
+        https://doi.org/10.1103/PhysRevA.65.042105
+        Using it as a BB84 probe is this package's construction, not a
+        published optimal attack.
+
+    Usage:
+        bb84 = BB84(seed=1, number_bits=1000)
+        bb84.key_generation(PartialSwapAttack(theta=np.pi/8))
+        bb84.qber()                    # grows with theta
+        eve_key = bb84.eve_guesses()   # probe read in Alice's basis
+        bb84.eve_optimal_success()     # exact Helstrom bound per basis
     """
 
     probe_labels = ("E",)
 
-    def __init__(self, theta=np.pi / 4, seed=43, probe_label="E"):
+    def __init__(self, theta=np.pi / 4, seed=secrets.randbits(128), probe_label="E"):
         if (isinstance(theta, bool) or not isinstance(theta, Real)
                 or not np.isfinite(theta) or not 0 <= theta <= np.pi / 2):
             raise ValueError("theta must be a finite real number in [0, pi/2]")

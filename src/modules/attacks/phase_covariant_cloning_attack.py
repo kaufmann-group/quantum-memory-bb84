@@ -15,6 +15,7 @@ References:
 """
 
 from numbers import Real
+import secrets
 
 import numpy as np
 from qutip import Qobj, basis, qeye, sigmax, tensor
@@ -24,15 +25,34 @@ from ..utils.quantum_register import ERASURE, UNKNOWN
 
 
 class PhaseCovariantCloningAttack(Attack):
-    """Approximately copy each BB84 state into Bob's signal and Eve's probe.
+    """Phase-covariant cloning attack.
+
+    Eve runs an economical, asymmetric 1-to-2 phase-covariant cloner on each
+    signal: Bob receives one approximate copy and Eve keeps the other, which
+    she measures in Alice's announced basis after sifting.
 
     theta controls the asymmetric tradeoff between Bob's and Eve's fidelities:
     theta=0 gives Bob a perfect copy; theta=pi/2 gives Eve a perfect copy.
+
+    Source:
+        C.-S. Niu and R. B. Griffiths, "Two-qubit copying machine for
+        economical quantum eavesdropping", Phys. Rev. A 60, 2764-2776 (1999).
+        https://doi.org/10.1103/PhysRevA.60.2764
+        See also D. Bruß, M. Cinchetti, G. M. D'Ariano and C. Macchiavello,
+        "Phase-covariant quantum cloning", Phys. Rev. A 62, 012302 (2000).
+        https://doi.org/10.1103/PhysRevA.62.012302
+
+    Usage:
+        bb84 = BB84(seed=1, number_bits=1000)
+        bb84.key_generation(PhaseCovariantCloningAttack(theta=np.pi/4))
+        bb84.qber()                    # about (1 - cos(theta))/2 ≈ 0.15
+        guesses = bb84.eve_guesses()
+        (guesses == bb84.alice_key).mean()   # about (1 + sin(theta))/2 ≈ 0.85
     """
 
     probe_labels = ("E",)
 
-    def __init__(self, theta=np.pi / 4, seed=43, probe_label="E"):
+    def __init__(self, theta=np.pi / 4, seed=secrets.randbits(128), probe_label="E"):
         if (isinstance(theta, bool) or not isinstance(theta, Real)
                 or not np.isfinite(theta) or not 0 <= theta <= np.pi / 2):
             raise ValueError("theta must be a finite real number in [0, pi/2]")

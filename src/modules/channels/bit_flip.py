@@ -23,6 +23,19 @@ __all__ = ["BitFlip"]
 
 
 class BitFlip(QuantumChannel):
+    """Bit-flip channel.
+
+    Applies X with probability p in [0, 1]: N(rho) = (1-p) rho + p X rho X.
+
+    Source:
+        https://quantumchannelzoo.org/channel/bit-flip
+
+    Usage:
+        BitFlip(p=0.2).apply(register, targets="B")
+        bb84.key_generation(signal_channel=BitFlip(0.05))
+        bb84.qber()   # about p/2: X-basis states are unaffected
+    """
+
     num_targets = 1
     input_dim = output_dim = 2
 

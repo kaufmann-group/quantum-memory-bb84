@@ -1,4 +1,5 @@
-"""Density-matrix register with labeled tensor factors and operation history.
+"""
+Density-matrix register with labeled tensor factors and operation history.
 
 The communication circuit stays QubitCircuit(1). The state may also contain
 Eve's probes and explicitly flagged erasure outputs. Channel maps may change
@@ -16,20 +17,17 @@ import numpy as np
 from qutip import Qobj, ket2dm, tensor, qeye, sigmax, sigmaz
 from qutip_qip.circuit import QubitCircuit
 
-# Measurement outcome for a lost photon: level |e> = |2> of an erasure qutrit.
-ERASURE = 2
-# Placeholder for a bit that Eve could not determine.
-UNKNOWN = -1
+ERASURE = 2 # Measurement outcome for a lost photon: level |e> = |2> of an erasure qutrit.
+UNKNOWN = -1 # Placeholder for a bit that Eve could not determine.
 
-# Isometry embedding a qubit into the {|0>, |1>} block of an erasure qutrit.
-_QUBIT_INTO_QUTRIT = Qobj([[1, 0], [0, 1], [0, 0]], dims=[[3], [2]])
-# Projector |e><e| onto the erasure level of a qutrit.
-_ERASED = Qobj(np.diag([0, 0, 1]))
-
+_QUBIT_INTO_QUTRIT = Qobj([[1, 0], [0, 1], [0, 0]], dims=[[3], [2]]) # The isometric embedding a qubit into the {|0>, |1>} block of an erasure qutrit. 
+_ERASED = Qobj(np.diag([0, 0, 1])) # Projector |e><e| onto the erasure level of a qutrit.
 
 @dataclass(frozen=True)
 class RegisterEvent:
-    """One recorded operation; the history of these is used to draw the circuit."""
+    """
+    One recorded operation; the history of these is used to draw the circuit.
+    """
 
     kind: str       # "prepare", "ancilla", "gate", "noise", "measure", "note" or "region"
     name: str       # label shown in the drawing
@@ -55,11 +53,17 @@ class QuantumRegister:
 
     @property
     def dims(self):
-        """Dimension of each tensor factor, e.g. [2, 2, 3]."""
+        """
+        Dimension of each tensor factor.
+        """
+
         return [] if self.state is None else list(self.state.dims[0])
 
     def _targets(self, targets):
-        """Accept one label or a list of labels; check they exist and are distinct."""
+        """
+        Accept one label or a list of labels; check they exist and are distinct.
+        """
+
         if self.state is None:
             raise ValueError("Load a state first")
         targets = [targets] if isinstance(targets, str) else list(targets)
@@ -70,12 +74,14 @@ class QuantumRegister:
         return targets
 
     def load(self, state, labels=("B",), signal="B", erasure_levels=None, name="Input state"):
-        """Replace the register contents with a new state and start a new history."""
+        """
+        Replace the register contents with a new state and start a new history.
+        """
+
         if not isinstance(state, Qobj):
             raise TypeError("state must be a QuTiP Qobj")
 
-        # A ket |psi> is stored as the density matrix |psi><psi|.
-        rho = ket2dm(state) if state.isket else state.copy()
+        rho = ket2dm(state) if state.isket else state.copy() # A ket |psi> is stored as the density matrix |psi><psi|.
         labels = list(labels)
 
         # Check that rho is a valid density matrix.
@@ -110,7 +116,8 @@ class QuantumRegister:
         return deepcopy(self)
 
     def _expand(self, operator, targets):
-        """Embed square or rectangular operators, respecting target order.
+        """
+        Embed square or rectangular operators, respecting target order.
 
         The result acts as `operator` on the targets and as the identity on
         every other factor of the register.
@@ -147,15 +154,18 @@ class QuantumRegister:
         array = array.transpose(permutation + [n + i for i in permutation])
         new_out = [out_dims[i] for i in permutation]
         new_in = [in_dims[i] for i in permutation]
-        return Qobj(array.reshape(int(np.prod(new_out)), int(np.prod(new_in))),
-                    dims=[new_out, new_in])
+        return Qobj(array.reshape(int(np.prod(new_out)), int(np.prod(new_in))), dims=[new_out, new_in])
 
     def _is_flagged_qutrit(self, target):
-        """True if the target is an erasure-flagged qutrit (a signal that may be lost)."""
+        """
+        True if the target is an erasure-flagged qutrit (a signal that may be lost).
+        """
+
         return target in self.erasure_levels and self.dims[self.labels.index(target)] == 3
 
     def _lift_unitary(self, operator, targets):
-        """Extend a qubit unitary to erasure-flagged qutrit targets.
+        """
+        Extend a qubit unitary to erasure-flagged qutrit targets.
 
         It acts as before when every flagged target is in its qubit block and
         as the identity whenever any flagged target is erased.
@@ -176,7 +186,9 @@ class QuantumRegister:
         return W*operator*W.dag() + identity - W*W.dag()
 
     def _lift_kraus(self, operators, targets):
-        """Extend a single-target qubit channel to an erasure-flagged qutrit."""
+        """
+        Extend a single-target qubit channel to an erasure-flagged qutrit.
+        """
         if len(targets) != 1:
             raise ValueError("Multi-target qubit channels on erasure-flagged qutrits are not supported")
         out = operators[0].dims[0]
@@ -230,9 +242,7 @@ class QuantumRegister:
 
         # A unitary U satisfies U^dag U = I.
         matrix = operator.full()
-        if not np.isfinite(matrix).all() or not np.allclose(
-            matrix.conj().T @ matrix, np.eye(len(matrix)), rtol=0, atol=1e-9
-        ):
+        if not np.isfinite(matrix).all() or not np.allclose(matrix.conj().T @ matrix, np.eye(len(matrix)), rtol=0, atol=1e-9):
             raise ValueError(f"{what} is not unitary")
 
     def apply_unitary(self, operator, targets="B", name="U"):
@@ -249,7 +259,8 @@ class QuantumRegister:
         return self
 
     def apply_circuit(self, circuit, targets):
-        """Run a unitary QubitCircuit and retain each gate for display.
+        """
+        Run a unitary QubitCircuit and retain each gate for display.
 
         targets[i] is the register label used for circuit wire i.
         """
@@ -295,7 +306,8 @@ class QuantumRegister:
         return self
 
     def apply_kraus(self, operators, targets="B", name="Noise", erasure_levels=None):
-        """Apply the channel rho -> sum_K K rho K^dag to the targets.
+        """
+        Apply the channel rho -> sum_K K rho K^dag to the targets.
 
         erasure_levels marks channel outputs that are erasure-flagged qutrits.
         """
@@ -347,7 +359,8 @@ class QuantumRegister:
         return self
 
     def measurement_projectors(self, target="B", basis="Z"):
-        """Projectors for measuring one target in "Z", "X", or at an angle in the x-z plane.
+        """
+        Projectors for measuring one target in "Z", "X", or at an angle in the x-z plane.
 
         A list of projectors is returned unchanged. On an erasure-flagged qutrit
         the qubit projectors are embedded and a projector onto |e> is added.
@@ -383,11 +396,13 @@ class QuantumRegister:
         return projectors
 
     def measure(self, target="B", basis="Z", rng=None, name=None):
-        """Projective measurement; returns the outcome index.
+        """
+        Projective measurement; returns the outcome index.
 
         One target accepts "X", "Z", an angle, or projectors. Several targets
         (a joint measurement) require explicit projectors on their joint space.
         """
+        
         targets = self._targets(target)
         dims = [self.dims[self.labels.index(t)] for t in targets]
 
@@ -400,8 +415,7 @@ class QuantumRegister:
 
         # Each projector must have the targets' dims and satisfy P = P^dag = P^2,
         # and together the projectors must sum to the identity.
-        if not projectors or any(P.dims != [dims, dims] or not P.isherm
-                                 or (P*P - P).norm() > 1e-9 for P in projectors):
+        if not projectors or any(P.dims != [dims, dims] or not P.isherm or (P*P - P).norm() > 1e-9 for P in projectors):
             raise ValueError("Supply projectors with the target's dimensions")
         if (sum(projectors, 0*qeye(dims)) - qeye(dims)).norm() > 1e-9:
             raise ValueError("Measurement projectors must sum to the identity")
@@ -444,16 +458,16 @@ class QuantumRegister:
             drawn_basis = None
 
         # The photon was lost if the outcome is the erasure projector |e><e|.
-        erased = len(targets) == 1 and targets[0] in self.erasure_levels and (
-            projectors[outcome] - _ERASED
-        ).norm() < 1e-9
+        erased = len(targets) == 1 and targets[0] in self.erasure_levels and (projectors[outcome] - _ERASED).norm() < 1e-9
 
-        self.history.append(RegisterEvent("measure", label, tuple(targets), tuple(dims), tuple(dims),
-                                          outcome, bool(erased), basis=drawn_basis))
+        self.history.append(RegisterEvent("measure", label, tuple(targets), tuple(dims), tuple(dims), outcome, bool(erased), basis=drawn_basis))
         return outcome
 
     def reduced(self, targets="B"):
-        """Reduced density matrix of the targets, with factors in the order given."""
+        """
+        Reduced density matrix of the targets, with factors in the order given.
+        """
+
         targets = self._targets(targets)
         indices = [self.labels.index(t) for t in targets]
 
@@ -462,7 +476,10 @@ class QuantumRegister:
         return self.state.ptrace(ordered).permute([ordered.index(i) for i in indices])
 
     def transmit(self, attack=None, channel=None, *, mark_regions=False):
-        """Communication circuit -> optional Alice-Eve channel on the signal -> attack step(s)."""
+        """
+        Communication circuit -> optional Alice-Eve channel on the signal -> attack step(s).
+        """
+
         if self.circuit.gates:
             if mark_regions:
                 self.mark_region("Transmission")
@@ -488,21 +505,29 @@ class QuantumRegister:
         return self
 
     def mark_region(self, name):
-        """Start a new titled region in the drawing, drawn as a barrier (see circuit_display)."""
+        """
+        Start a new titled region in the drawing, drawn as a barrier (see circuit_display).
+        """
+
         self.history.append(RegisterEvent("region", name, ()))
 
     def annotate(self, name, targets="B"):
-        """Record a note; notes are not drawn as gates but the display code reads some of them."""
+        """
+        Record a note; notes are not drawn as gates but the display code reads some of them.
+        """
+
         targets = self._targets(targets)
         self.history.append(RegisterEvent("note", name, tuple(targets)))
         return self
 
     def display(self, theme="iqp", dpi=300, save_path=None, show=True, title=None):
-        """Draw the operation history as a Qiskit circuit and return its Matplotlib Figure.
+        """
+        Draw the operation history as a Qiskit circuit and return its Matplotlib Figure.
 
         QuTiP still computes everything; Qiskit only draws. theme is a Qiskit
         style ("iqp", "iqp-dark", "clifford", "textbook", "bw" or a style dict);
         QuTiP's theme names ("qutip", "light", "dark", "modern") still work.
         """
+
         from .circuit_display import draw_register
         return draw_register(self, theme=theme, dpi=dpi, save_path=save_path, show=show, title=title)

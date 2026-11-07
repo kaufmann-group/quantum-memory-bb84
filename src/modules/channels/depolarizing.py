@@ -19,7 +19,19 @@ __all__ = ["Depolarizing"]
 
 
 class Depolarizing(QuantumChannel):
-    """Each nonidentity Pauli occurs with probability p/3."""
+    """Depolarizing channel.
+
+    Replaces the qubit with a random Pauli error: each of X, Y and Z occurs
+    with probability p/3, so complete depolarization is p = 3/4, not p = 1.
+
+    Source:
+        https://quantumchannelzoo.org/channel/depolarizing
+
+    Usage:
+        Depolarizing(p=0.15).apply(register, targets="E")
+        bb84.key_generation(signal_channel=Depolarizing(0.15))
+        bb84.qber()   # about 2p/3 = 0.10
+    """
 
     num_targets = 1
     input_dim = output_dim = 2

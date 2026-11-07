@@ -3,14 +3,27 @@ from abc import ABC, abstractmethod
 from ..utils.quantum_register import QuantumRegister
 
 class QuantumChannel(ABC):
-    """
-    Define channels through Kraus operators.
+    """QuantumChannel (abstract base class for noise channels).
+
+    Defines a channel N(rho) = sum_K K rho K^dag through its Kraus operators
+    and applies it to labeled subsystems of a QuantumRegister.
 
     Subclasses implement kraus_operators(). A channel whose output is an
     erasure qutrit also sets erasure_outcome = 2 (example see QubitErasure).
 
     Source:
         https://quantumchannelzoo.org/about
+
+    Usage:
+        class Identity(QuantumChannel):
+            num_targets = 1
+
+            def kraus_operators(self):
+                return [qeye(2)]
+
+        Identity().apply(register, "B")               # one target
+        Identity().apply_each(register, ["E", "F"])   # each target independently
+        bb84.key_generation(signal_channel=Identity())
     """
 
     num_targets = 1 # Number of subsystems the channel acts on jointly, each channel here acts on one qubit (2x2 Kraus operator). 

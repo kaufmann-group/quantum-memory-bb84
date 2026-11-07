@@ -11,20 +11,40 @@ Calling the fixed readout therefore raises instead of silently claiming that
 a non-adaptive measurement is noise-adaptive.
 """
 
+import secrets
+
 from .attack import Attack
 from .fggnp_attack import FGGNPAttack
 
 
 class NoiseAdaptiveHelstromAttack(Attack):
-    """Wrap a deterministic probe interaction and require optimized readout.
+    """Noise-adaptive Helstrom attack.
+
+    Wraps a probe-based attack and replaces Eve's fixed probe readout with the
+    Helstrom measurement: the minimum-error measurement for the probes' actual
+    noisy states, given the public basis and Bob's detection.
 
     The default interaction is FGGNPAttack. An existing CNOTAttack or another
     probe-based Attack can be provided instead, including custom probe labels.
+    It is a readout strategy, not a new signal interaction, so its guesses
+    come only from eve_guesses(readout="optimal") (BB84 or E91).
+
+    Source:
+        C. W. Helstrom, "Quantum detection and estimation theory",
+        J. Stat. Phys. 1, 231-252 (1969).
+        https://doi.org/10.1007/BF01007479
+
+    Usage:
+        bb84 = BB84(seed=1, number_bits=1000)
+        attack = NoiseAdaptiveHelstromAttack(CNOTAttack())
+        bb84.key_generation(attack, memory_channel=Depolarizing(0.1))
+        eve_key = bb84.eve_guesses(readout="optimal")
+        bb84.eve_optimal_success()   # exact Helstrom success probability per basis
     """
 
     probe_labels = ("E", "F")
 
-    def __init__(self, interaction=None, seed=43):
+    def __init__(self, interaction=None, seed=secrets.randbits(128)):
         if interaction is None:
             interaction = FGGNPAttack(seed=seed)
         if not isinstance(interaction, Attack) or not interaction.probe_labels:
@@ -33,8 +53,7 @@ class NoiseAdaptiveHelstromAttack(Attack):
             raise ValueError("Do not wrap another NoiseAdaptiveHelstromAttack")
 
         self.interaction = interaction
-        self.probe_labels = self._check_labels(interaction.probe_labels,
-                                               len(interaction.probe_labels))
+        self.probe_labels = self._check_labels(interaction.probe_labels, len(interaction.probe_labels))
         super().__init__(seed)
 
     def apply(self, register):
@@ -57,6 +76,4 @@ class NoiseAdaptiveHelstromAttack(Attack):
         if reference_states is None:
             raise ValueError("Noise-adaptive readout needs BB84's conditional probe "
                              "states; call BB84.eve_guesses(readout='optimal')")
-        return super().measure_after_sifting(alice_bases, sifted_mask,
-                                             guess_on_erasure=guess_on_erasure,
-                                             reference_states=reference_states)
+        return super().measure_after_sifting(alice_bases, sifted_mask, guess_on_erasure=guess_on_erasure, reference_states=reference_states)

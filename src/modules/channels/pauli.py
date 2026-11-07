@@ -18,7 +18,20 @@ __all__ = ["Pauli"]
 
 
 class Pauli(QuantumChannel):
-    """Four explicit probabilities in I, X, Y, Z order."""
+    """Pauli channel.
+
+    Applies I, X, Y or Z with probabilities p1, p2, p3 and p4, which must
+    sum to one.
+
+    Four explicit probabilities in I, X, Y, Z order.
+
+    Source:
+        https://quantumchannelzoo.org/channel/pauli
+
+    Usage:
+        Pauli(p1=0.7, p2=0.1, p3=0.1, p4=0.1).apply(register, "E")
+        e91.key_generation(alice_channel=Pauli(0.97, 0.01, 0.01, 0.01))
+    """
 
     num_targets = 1
     input_dim = output_dim = 2

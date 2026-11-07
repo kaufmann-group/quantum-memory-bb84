@@ -9,6 +9,7 @@ amplification are not implemented here.
 
 from copy import deepcopy
 from numbers import Integral
+import secrets
 
 import numpy as np
 from qutip import Qobj, basis
@@ -24,7 +25,7 @@ class BB84(Protocol):
     Simulate `number_bits` BB84 rounds, optionally with attacks and noise channels.
     """
 
-    def __init__(self, seed, number_bits=1000):
+    def __init__(self, seed=secrets.randbits(128), number_bits=1000):
         super().__init__(seed)
 
         if isinstance(number_bits, bool) or not isinstance(number_bits, Integral) or number_bits < 1:

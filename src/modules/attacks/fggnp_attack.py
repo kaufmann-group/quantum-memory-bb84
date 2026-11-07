@@ -2,16 +2,29 @@
 The "optimal Eve" individual attack via Fuchs, Gisin, Griffiths, Niu and Peres
 (FGGNP), built as a three-qubit circuit on the signal and two probes E and F
 
-Sources:
-    https://journals.aps.org/pra/pdf/10.1103/PhysRevA.56.1163
-    https://journals.aps.org/pra/pdf/10.1103/PhysRevA.56.1173
+Eve's two probes E and F interact with the signal through two CNOTs, tuned
+so that Bob sees the chosen error rate `disturbance` while Eve gains the
+most information about each bit that an attack on one signal at a time
+allows. After sifting she guesses with E's Z outcome (Z basis) or the parity of
+E's and F's X outcomes (X basis).
 
-Noise is applied by BB84 before capture. The readout is fixed; with noise it
-is not claimed to maximize Eve's accessible information. For the best
-single-round measurement, use BB84.eve_guesses(readout="optimal").
+https://journals.aps.org/pra/pdf/10.1103/PhysRevA.56.1163
+https://journals.aps.org/pra/pdf/10.1103/PhysRevA.56.1173 Figure 1
+
+Usage:
+    bb84 = BB84(seed=1, number_bits=1000)
+    bb84.key_generation(FGGNPAttack(disturbance=0.10))
+    bb84.qber()                    # about 0.10
+    eve_key = bb84.eve_guesses()   # fixed readout described above
+    bb84.eve_optimal_success()     # exact Helstrom bound per basis
+
+    # FGGNP's fixed readout needs Z/X key bases, so use E91's "zx" settings.
+    e91 = E91(seed=1, number_pairs=1000, settings="zx")
+    e91.key_generation(FGGNPAttack())
 """
 
 from numbers import Real
+import secrets
 
 import numpy as np
 from qutip import basis
@@ -22,9 +35,13 @@ from ..utils.quantum_register import ERASURE, UNKNOWN
 
 
 class FGGNPAttack(Attack):
+    """
+    Fuchs-Gisin-Griffiths-Niu-Peres optimal individual attack.
+    """
+
     probe_labels = ("E", "F")
 
-    def __init__(self, disturbance=0.10, seed=43, probe_labels=("E", "F")):
+    def __init__(self, disturbance=0.10, seed=secrets.randbits(128), probe_labels=("E", "F")):
         if isinstance(disturbance, bool) or not isinstance(disturbance, Real) or not 0 <= disturbance <= .5:
             raise ValueError("Disturbance must be a finite real number in [0, 0.5]")
         super().__init__(seed)

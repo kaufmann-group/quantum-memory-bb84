@@ -1,4 +1,11 @@
-"""Attack lifecycle: interact, apply noise, measure Bob, capture, read Eve later."""
+"""
+Attack abstract base class.
+
+Runs Eve's interaction with each signal, stores her probes after Bob's
+measurement, and reads them out once Alice announces her bases.
+Subclasses implement apply() (Eve's interaction with the signal) and, if
+they keep quantum probes, _read_probe() (Eve's measurement after sifting).
+"""
 
 from abc import ABC, abstractmethod
 from numbers import Real
@@ -10,17 +17,21 @@ from ..utils.quantum_register import QuantumRegister, UNKNOWN
 
 
 def _is_basis(b):
-    """A public basis is "X", "Z", or a measurement angle in the x-z plane (radians)."""
+    """
+    A public basis is "X", "Z", or a measurement angle in the x-z plane (radians).
+    """
+
     if isinstance(b, str):
         return b in ("X", "Z")
-    # bool is a subclass of int (and so of Real), so it is excluded explicitly.
     return isinstance(b, Real) and not isinstance(b, bool) and bool(np.isfinite(b))
 
 
 def _same_state(a, b):
-    """Compare RNG states, which may hold NumPy arrays (e.g. MT19937)."""
+    """
+    Compare RNG states, which may hold NumPy arrays (e.g. MT19937).
+    """
+
     if isinstance(a, dict):
-        # Nested dicts are equal when they have the same keys and equal values.
         if not isinstance(b, dict) or a.keys() != b.keys():
             return False
         return all(_same_state(a[k], b[k]) for k in a)
@@ -28,10 +39,8 @@ def _same_state(a, b):
 
 
 class Attack(ABC):
-    """Base class for Eve's attacks.
-
-    Subclasses implement apply() (Eve's interaction with the signal) and, if
-    they keep quantum probes, _read_probe() (Eve's measurement after sifting).
+    """
+    Attack abstract base class.
     """
 
     probe_labels = ()  # register labels of Eve's quantum probes (none for intercept-resend)
@@ -42,7 +51,10 @@ class Attack(ABC):
         self.reset()
 
     def reset(self):
-        """Clear the previous batch while keeping the RNG stream advancing."""
+        """
+        Clear the previous batch while keeping the RNG stream advancing.
+        """
+
         self.probe_states = []           # Eve's reduced probe state for every round
         self.probe_erasure_levels = []   # erasure flags of those probes for every round
         self.round_records = {}          # round index -> register to display
@@ -53,7 +65,10 @@ class Attack(ABC):
 
     @staticmethod
     def _check_labels(labels, count):
-        """Validate per-instance probe labels (needed when attacks are chained)."""
+        """
+        Validate per-instance probe labels (when attacks are chained).
+        """
+
         labels = (labels,) if isinstance(labels, str) else tuple(labels)
         if (len(labels) != count or len(set(labels)) != count
                 or not all(isinstance(label, str) and label for label in labels)):
@@ -68,15 +83,18 @@ class Attack(ABC):
         return self.apply(register)
 
     def average_apply(self, register):
-        """Apply the attack averaged over Eve's own random choices.
+        """
+        Apply the attack averaged over Eve's own random choices.
 
         Used to compute the reference probe states for the optimal readout.
         The default suits attacks whose apply() draws no random numbers (the
         CNOT and FGGNP attacks). If apply() draws from self.rng, the RNG is
         restored and NotImplementedError asks the subclass to override this.
         """
+        
         state = self.rng.bit_generator.state
         self.apply(register)
+
         # A changed RNG state means apply() drew random numbers.
         if not _same_state(self.rng.bit_generator.state, state):
             self.rng.bit_generator.state = state
@@ -84,7 +102,8 @@ class Attack(ABC):
         return register
 
     def capture(self, register, round_index, record=False, detected=True):
-        """Called by BB84 after memory noise and Bob's measurement.
+        """
+        Called by BB84 after memory noise and Bob's measurement.
 
         Conditioning the simulated probe state on Bob's sampled result retains
         joint measurement statistics. Eve's measurement policy receives only
@@ -98,9 +117,7 @@ class Attack(ABC):
         if self.probe_labels:
             # Keep only Eve's probes (everything else is traced out) and their erasure flags.
             self.probe_states.append(register.reduced(self.probe_labels).copy())
-            self.probe_erasure_levels.append({label: register.erasure_levels[label]
-                                              for label in self.probe_labels
-                                              if label in register.erasure_levels})
+            self.probe_erasure_levels.append({label: register.erasure_levels[label] for label in self.probe_labels if label in register.erasure_levels})
 
         # Recorded rounds keep the whole register so they can be displayed later.
         if record:
@@ -109,20 +126,23 @@ class Attack(ABC):
         self.round_count += 1
 
     def _probe_register(self, index):
-        """Return a fresh register holding round `index`'s stored probes, ready to measure."""
+        """
+        Return a fresh register holding round `index`'s stored probes, ready to measure.
+        """
+
         # A recorded round reuses its full register, so its drawing shows the whole round.
         if index in self._stored_round_records:
             return self._stored_round_records[index].copy()
-        return QuantumRegister().load(self.probe_states[index], labels=self.probe_labels,
-                                      signal=self.probe_labels[0],
-                                      erasure_levels=self.probe_erasure_levels[index],
-                                      name="Stored probe")
+        return QuantumRegister().load(self.probe_states[index], labels=self.probe_labels, signal=self.probe_labels[0], erasure_levels=self.probe_erasure_levels[index], name="Stored probe")
 
     def _read_probe(self, register, alice_basis):
         raise NotImplementedError("This attack has no delayed quantum readout")
 
     def _read_optimal(self, register, projectors):
-        """Joint Helstrom measurement on all probes; inconclusive gives UNKNOWN."""
+        """
+        Joint Helstrom measurement on all probes; inconclusive gives UNKNOWN.
+        """
+        
         outcome = register.measure(list(self.probe_labels), projectors, self.rng, name="Helstrom")
         # Outcome 2 is helstrom_projectors' inconclusive projector.
         return UNKNOWN if outcome == 2 else outcome
@@ -136,9 +156,7 @@ class Attack(ABC):
         if not all(_is_basis(b) for b in bases):
             raise ValueError("Alice's bases must be 'X', 'Z', or finite measurement angles in radians")
         if (mask & ~np.asarray(self.detected, dtype=bool)).any():
-            raise ValueError("The mask includes rounds Bob lost to erasure, so Eve's guesses "
-                             "would not align with the sifted key. Pass BB84.sifted_mask "
-                             "(not matching_bases), or call BB84.eve_guesses().")
+            raise ValueError("The mask includes rounds Bob lost to erasure, so Eve's guesses would not align with the sifted key. Pass BB84.sifted_mask (not matching_bases), or call BB84.eve_guesses().")
         return bases, mask
 
     def measure_after_sifting(self, alice_bases, sifted_mask, guess_on_erasure=False, reference_states=None):
@@ -159,8 +177,7 @@ class Attack(ABC):
         # One Helstrom measurement per public basis (None: Bob never detects in that basis).
         optimal = None
         if reference_states is not None:
-            optimal = {b: helstrom_projectors(*states)
-                       for b, states in reference_states.items() if states is not None}
+            optimal = {b: helstrom_projectors(*states) for b, states in reference_states.items() if states is not None}
 
         guesses = []
         for i in np.flatnonzero(mask):  # indices of the sifted rounds

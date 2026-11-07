@@ -30,7 +30,25 @@ __all__ = ["GeneralizedDephasing"]
 
 
 class GeneralizedDephasing(QuantumChannel):
-    """A general dephasing channel, not restricted to one real qubit parameter."""
+    """Generalized dephasing channel.
+
+    Keeps the populations in a chosen basis of a d-level system and multiplies
+    each coherence rho_ij by the overlap <phi_j|phi_i> of environment states.
+
+    A general dephasing channel, not restricted to one real qubit parameter.
+
+    Source:
+        https://quantumchannelzoo.org/channel/general-dephase
+
+    Usage:
+        p = 0.2
+        phi0 = np.sqrt(1-p)*basis(2, 0) + np.sqrt(p)*basis(2, 1)
+        phi1 = np.sqrt(1-p)*basis(2, 0) - np.sqrt(p)*basis(2, 1)
+        GeneralizedDephasing([phi0, phi1]).apply(register, "E")   # same as PhaseFlip(p)
+
+        C = np.array([[1, 0.6], [0.6, 1]])   # N(rho)_01 = 0.6 * rho_01
+        bb84.key_generation(signal_channel=GeneralizedDephasing.from_correlation_matrix(C))
+    """
 
     num_targets = 1
 

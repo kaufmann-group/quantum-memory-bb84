@@ -23,7 +23,20 @@ __all__ = ["AmplitudeDamping"]
 
 
 class AmplitudeDamping(QuantumChannel):
-    """A_gamma, with gamma in [0, 1]. Construct a new instance for new parameters."""
+    """Amplitude damping channel.
+
+    Relaxes |1> to |0> with probability gamma in [0, 1], as when a qubit loses
+    energy to a zero-temperature environment.
+
+    A_gamma, with gamma in [0, 1]. Construct a new instance for new parameters.
+
+    Source:
+        https://quantumchannelzoo.org/channel/amplitude-damping
+
+    Usage:
+        AmplitudeDamping(gamma=0.2).apply(register, targets="E")
+        bb84.key_generation(CNOTAttack(), memory_channel=AmplitudeDamping(0.2))  # Eve's probe
+    """
 
     num_targets = 1
     input_dim = output_dim = 2

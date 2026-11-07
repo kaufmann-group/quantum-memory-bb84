@@ -18,7 +18,19 @@ __all__ = ["PhaseFlip"]
 
 
 class PhaseFlip(QuantumChannel):
-    """Apply Z with probability p."""
+    """Phase-flip channel.
+
+    Applies Z with probability p in [0, 1], which multiplies the coherences by
+    1-2p (Z-dephasing).
+
+    Source:
+        https://quantumchannelzoo.org/channel/phase-flip
+
+    Usage:
+        PhaseFlip(p=0.2).apply(register, targets="E")
+        bb84.key_generation(signal_channel=PhaseFlip(0.1))
+        bb84.qber()   # about p/2: Z-basis states are unaffected
+    """
 
     num_targets = 1
     input_dim = output_dim = 2

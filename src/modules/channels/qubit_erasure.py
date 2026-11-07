@@ -37,7 +37,19 @@ def _erasure_measurement_projectors(basis_name):
 
 
 class QubitErasure(QuantumChannel):
-    """Erase with probability epsilon in [0, 1]; output is always a qutrit."""
+    """Qubit erasure channel.
+
+    Loses the photon with probability epsilon in [0, 1]; the output is always
+    a qutrit whose level |e> = |2> flags the loss, and measuring it returns 2.
+
+    Source:
+        https://quantumchannelzoo.org/channel/erasure
+
+    Usage:
+        QubitErasure(epsilon=0.1).apply(register, targets="B")
+        bb84.key_generation(alice_eve_channel=QubitErasure(0.1))  # loss before Eve
+        bb84.loss_rate()   # about epsilon
+    """
 
     num_targets = 1
     input_dim = 2

@@ -27,7 +27,22 @@ __all__ = ["Dephrasure"]
 
 
 class Dephrasure(QuantumChannel):
-    """N_{p,q}: Z-dephasing p, then qubit erasure q (2 -> 3)."""
+    """Dephrasure channel.
+
+    Z-dephasing with probability p followed by erasure with probability q;
+    the output is a qutrit whose level |2> flags a lost photon.
+
+    N_{p,q}: Z-dephasing p, then qubit erasure q (2 -> 3).
+
+    Source:
+        https://quantumchannelzoo.org/channel/dephrasure
+        https://arxiv.org/abs/1806.08327
+
+    Usage:
+        Dephrasure(p=0.1, q=0.2).apply(register, targets="B")
+        bb84.key_generation(signal_channel=Dephrasure(p=0.05, q=0.1))
+        bb84.loss_rate()   # about q
+    """
 
     num_targets = 1
     input_dim = 2

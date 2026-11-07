@@ -27,6 +27,7 @@ authentication, and privacy amplification are not implemented here.
 
 from copy import deepcopy
 from numbers import Integral
+import secrets
 
 import numpy as np
 from qutip import Qobj, basis, tensor
@@ -63,7 +64,7 @@ class E91(Protocol):
 
     party_labels = ("A", "B")  # Alice's and Bob's qubits
 
-    def __init__(self, seed=42, number_pairs=1000, settings="ekert"):
+    def __init__(self, seed=secrets.randbits(128), number_pairs=1000, settings="ekert"):
         super().__init__(seed)
 
         # bool is a subclass of int, so it is rejected explicitly.

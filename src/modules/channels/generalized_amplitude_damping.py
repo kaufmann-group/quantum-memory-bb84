@@ -20,7 +20,20 @@ __all__ = ["GeneralizedAmplitudeDamping"]
 
 
 class GeneralizedAmplitudeDamping(QuantumChannel):
-    """A_{gamma,N}, using all four Kraus operators from the source."""
+    """Generalized amplitude damping channel.
+
+    Relaxes a qubit at rate gamma toward the thermal state diag(1-N, N), i.e.
+    amplitude damping into a finite-temperature environment.
+
+    A_{gamma,N}, using all four Kraus operators from the source.
+
+    Source:
+        https://quantumchannelzoo.org/channel/generalized_amplitude
+
+    Usage:
+        GeneralizedAmplitudeDamping(gamma=0.2, N=0.1).apply(register, "E")
+        bb84.key_generation(FGGNPAttack(), memory_channel=GeneralizedAmplitudeDamping(0.2, 0.1))
+    """
 
     num_targets = 1
     input_dim = output_dim = 2
