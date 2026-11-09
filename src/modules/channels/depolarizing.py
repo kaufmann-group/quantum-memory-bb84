@@ -1,11 +1,14 @@
-"""Qubit depolarizing channel, using the Zoo's Pauli-error parameter p.
+"""Depolarizing channel.
 
-Source: https://quantumchannelzoo.org/channel/depolarizing
-Action: N(rho) = (1-p)rho + (p/3)(XrhoX + YrhoY + ZrhoZ).
-p is in [0, 1]. In (1-q)rho + q*Tr(rho)*I/2, q = 4*p/3.
-Consequently, complete depolarization is p=3/4, NOT p=1.
+Replaces the qubit with a random Pauli error: each of X, Y and Z occurs
+with probability p/3, so complete depolarization is p = 3/4, not p = 1.
 
-Usage: Depolarizing(p=0.15).apply(register, targets="E")
+https://quantumchannelzoo.org/channel/depolarizing
+
+Usage:
+    Depolarizing(p=0.15).apply(register, targets="E")
+    bb84.key_generation(signal_channel=Depolarizing(0.15))
+    bb84.qber()   # about 2p/3 = 0.10
 """
 
 from math import sqrt
@@ -19,18 +22,8 @@ __all__ = ["Depolarizing"]
 
 
 class Depolarizing(QuantumChannel):
-    """Depolarizing channel.
-
-    Replaces the qubit with a random Pauli error: each of X, Y and Z occurs
-    with probability p/3, so complete depolarization is p = 3/4, not p = 1.
-
-    Source:
-        https://quantumchannelzoo.org/channel/depolarizing
-
-    Usage:
-        Depolarizing(p=0.15).apply(register, targets="E")
-        bb84.key_generation(signal_channel=Depolarizing(0.15))
-        bb84.qber()   # about 2p/3 = 0.10
+    """
+    Depolarizing channel.
     """
 
     num_targets = 1

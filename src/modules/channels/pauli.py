@@ -1,10 +1,14 @@
-"""General qubit Pauli channel, with the Zoo's probability ordering.
+"""
+Pauli channel.
 
-Source: https://quantumchannelzoo.org/channel/pauli
-Action: N(rho) = p1*rho + p2*XrhoX + p3*YrhoY + p4*ZrhoZ.
-The four probabilities correspond to I, X, Y, Z and sum to one.
-Only roundoff within 1e-12 of a unit sum is normalized.
-Usage: Pauli(p1=0.7, p2=0.1, p3=0.1, p4=0.1).apply(register, "E")
+Applies I, X, Y or Z with probabilities p1, p2, p3 and p4, which must
+sum to one. Four explicit probabilities in I, X, Y, Z order.
+
+https://quantumchannelzoo.org/channel/pauli
+
+Usage:
+    Pauli(p1=0.7, p2=0.1, p3=0.1, p4=0.1).apply(register, "E")
+    e91.key_generation(alice_channel=Pauli(0.97, 0.01, 0.01, 0.01))
 """
 
 from math import fsum, isclose, sqrt
@@ -18,19 +22,8 @@ __all__ = ["Pauli"]
 
 
 class Pauli(QuantumChannel):
-    """Pauli channel.
-
-    Applies I, X, Y or Z with probabilities p1, p2, p3 and p4, which must
-    sum to one.
-
-    Four explicit probabilities in I, X, Y, Z order.
-
-    Source:
-        https://quantumchannelzoo.org/channel/pauli
-
-    Usage:
-        Pauli(p1=0.7, p2=0.1, p3=0.1, p4=0.1).apply(register, "E")
-        e91.key_generation(alice_channel=Pauli(0.97, 0.01, 0.01, 0.01))
+    """
+    Pauli channel.
     """
 
     num_targets = 1

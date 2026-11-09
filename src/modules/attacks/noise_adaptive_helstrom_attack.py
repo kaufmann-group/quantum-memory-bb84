@@ -1,14 +1,24 @@
-"""Noise-adaptive Helstrom readout of an existing quantum-probe attack.
+"""
+Noise-adaptive Helstrom attack.
 
-This is a measurement strategy, NOT a distinct signal-interaction attack.
-It wraps an attack such as FGGNP or CNOT and gives Eve the best single-round
-minimum-error readout of its actual noisy probe states, conditional on the
-public BB84 basis and Bob's announced detection event.
+Wraps a probe-based attack and replaces Eve's fixed probe readout with the
+Helstrom measurement: the minimum-error measurement for the probes' actual
+noisy states, given the public basis and Bob's detection.
 
-The reference states depend on the whole BB84 channel configuration. They are
-computed by BB84.eve_guesses(readout="optimal"), not by the attack in isolation.
-Calling the fixed readout therefore raises instead of silently claiming that
-a non-adaptive measurement is noise-adaptive.
+The default interaction is FGGNPAttack. An existing CNOTAttack or another
+probe-based Attack can be provided instead, including custom probe labels.
+It is a readout strategy, not a new signal interaction, so its guesses
+come only from eve_guesses(readout="optimal") (BB84 or E91).
+
+Source:
+    https://doi.org/10.1007/BF01007479
+
+Usage:
+    bb84 = BB84(seed=1, number_bits=1000)
+    attack = NoiseAdaptiveHelstromAttack(CNOTAttack())
+    bb84.key_generation(attack, memory_channel=Depolarizing(0.1))
+    eve_key = bb84.eve_guesses(readout="optimal")
+    bb84.eve_optimal_success()   # exact Helstrom success probability per basis
 """
 
 import secrets
@@ -18,28 +28,8 @@ from .fggnp_attack import FGGNPAttack
 
 
 class NoiseAdaptiveHelstromAttack(Attack):
-    """Noise-adaptive Helstrom attack.
-
-    Wraps a probe-based attack and replaces Eve's fixed probe readout with the
-    Helstrom measurement: the minimum-error measurement for the probes' actual
-    noisy states, given the public basis and Bob's detection.
-
-    The default interaction is FGGNPAttack. An existing CNOTAttack or another
-    probe-based Attack can be provided instead, including custom probe labels.
-    It is a readout strategy, not a new signal interaction, so its guesses
-    come only from eve_guesses(readout="optimal") (BB84 or E91).
-
-    Source:
-        C. W. Helstrom, "Quantum detection and estimation theory",
-        J. Stat. Phys. 1, 231-252 (1969).
-        https://doi.org/10.1007/BF01007479
-
-    Usage:
-        bb84 = BB84(seed=1, number_bits=1000)
-        attack = NoiseAdaptiveHelstromAttack(CNOTAttack())
-        bb84.key_generation(attack, memory_channel=Depolarizing(0.1))
-        eve_key = bb84.eve_guesses(readout="optimal")
-        bb84.eve_optimal_success()   # exact Helstrom success probability per basis
+    """
+    Noise-adaptive Helstrom attack.
     """
 
     probe_labels = ("E", "F")

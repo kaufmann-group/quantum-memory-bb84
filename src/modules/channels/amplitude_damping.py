@@ -1,15 +1,14 @@
 """
-amplitude damping quantum channel
+Amplitude Damping Quantum Channel
 
-source:
-    https://quantumchannelzoo.org/channel/amplitude-damping
+Relaxation of |1> to |0> with probability gamma in [0, 1]
+K0 = |0><0| + sqrt(1-gamma)|1><1|,  K1 = sqrt(gamma)|0><1|.
 
-description:
-    relaxation of |1> to |0> with probability gamma in [0, 1]
-    K0 = |0><0| + sqrt(1-gamma)|1><1|,  K1 = sqrt(gamma)|0><1|
+https://quantumchannelzoo.org/channel/amplitude-damping    
 
-usage:
+Usage:
     AmplitudeDamping(gamma=0.2).apply(register, targets="E")
+    bb84.key_generation(CNOTAttack(), memory_channel=AmplitudeDamping(0.2))  # Eve's probe
 """
 
 from math import sqrt
@@ -23,19 +22,8 @@ __all__ = ["AmplitudeDamping"]
 
 
 class AmplitudeDamping(QuantumChannel):
-    """Amplitude damping channel.
-
-    Relaxes |1> to |0> with probability gamma in [0, 1], as when a qubit loses
-    energy to a zero-temperature environment.
-
-    A_gamma, with gamma in [0, 1]. Construct a new instance for new parameters.
-
-    Source:
-        https://quantumchannelzoo.org/channel/amplitude-damping
-
-    Usage:
-        AmplitudeDamping(gamma=0.2).apply(register, targets="E")
-        bb84.key_generation(CNOTAttack(), memory_channel=AmplitudeDamping(0.2))  # Eve's probe
+    """
+    Amplitude damping quantum channel
     """
 
     num_targets = 1

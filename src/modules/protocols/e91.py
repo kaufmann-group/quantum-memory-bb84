@@ -39,12 +39,7 @@ from ..utils.quantum_register import ERASURE, UNKNOWN, QuantumRegister
 
 # Preset measurement settings (see the module docstring). chsh=((i, j), (k, l))
 # holds the indices of Alice's settings a, a' and Bob's settings b, b'.
-SETTINGS = {
-    "ekert": dict(alice=(0.0, np.pi/4, np.pi/2), bob=(np.pi/4, np.pi/2, 3*np.pi/4),
-                  chsh=((0, 2), (0, 2))),
-    "zx": dict(alice=(0.0, np.pi/2), bob=(0.0, np.pi/2, np.pi/4, 3*np.pi/4),
-               chsh=((0, 1), (2, 3))),
-}
+SETTINGS = {"ekert": dict(alice=(0.0, np.pi/4, np.pi/2), bob=(np.pi/4, np.pi/2, 3*np.pi/4), chsh=((0, 2), (0, 2))), "zx": dict(alice=(0.0, np.pi/2), bob=(0.0, np.pi/2, np.pi/4, 3*np.pi/4), chsh=((0, 1), (2, 3)))}
 
 
 def _basis_label(angle):
@@ -139,8 +134,7 @@ class E91(Protocol):
     @staticmethod
     def _prepare(register, attacked_arm):
         """Emit the singlet (|01> - |10>)/sqrt(2): |00> -> X, X -> H on A -> CNOT A->B."""
-        register.load(tensor(basis(2, 0), basis(2, 0)), labels=("A", "B"),
-                      signal=attacked_arm, name="Source |00>")
+        register.load(tensor(basis(2, 0), basis(2, 0)), labels=("A", "B"), signal=attacked_arm, name="Source |00>")
         source = QubitCircuit(2)
         source.add_gate("X", targets=[0])                   # |00> -> |10>
         source.add_gate("X", targets=[1])                   # -> |11>
@@ -181,10 +175,7 @@ class E91(Protocol):
             a.reset()
 
         # A copy, so later changes to these objects cannot alter this run's analysis.
-        self._run_config = deepcopy(dict(alice_channel=alice_channel, bob_channel=bob_channel,
-                                         memory_channel=memory_channel, memory_targets=targets,
-                                         source_eve_channel=source_eve_channel, attacked_arm=attacked_arm,
-                                         circuit=self.register.circuit, attacks=attacks))
+        self._run_config = deepcopy(dict(alice_channel=alice_channel, bob_channel=bob_channel, memory_channel=memory_channel, memory_targets=targets, source_eve_channel=source_eve_channel, attacked_arm=attacked_arm, circuit=self.register.circuit, attacks=attacks))
 
         for i in range(self.number_pairs):
             # The source emits a singlet; the attacked arm passes the channel and Eve.
@@ -318,7 +309,8 @@ class E91(Protocol):
         return tuple(weighted)
 
     def eve_guesses(self, attack=None, guess_on_erasure=False, readout="fixed"):
-        """Eve's delayed guesses of the key bits, aligned element-by-element with alice_key.
+        """
+        Eve's delayed guesses of the key bits, aligned element-by-element with alice_key.
 
         readout="fixed" uses the attack's own readout, which estimates the bit
         on the qubit she attacked. On Bob's arm she then flips it, since the
@@ -330,6 +322,7 @@ class E91(Protocol):
         gives no information (erased, or an inconclusive optimal outcome)
         return UNKNOWN=-1, or a random bit with guess_on_erasure=True.
         """
+
         self._require_run()
         if readout not in ("fixed", "optimal"):
             raise ValueError('readout must be "fixed" or "optimal"')
@@ -341,9 +334,7 @@ class E91(Protocol):
         if readout == "optimal" and chosen.probe_labels:
             references = {_basis_label(a): self._reference_probe_states(chosen, a) for a in self.key_angles}
 
-        guesses = chosen.measure_after_sifting(self.alice_basis_labels, self.key_mask,
-                                               guess_on_erasure=guess_on_erasure,
-                                               reference_states=references)
+        guesses = chosen.measure_after_sifting(self.alice_basis_labels, self.key_mask, guess_on_erasure=guess_on_erasure, reference_states=references)
 
         # A fixed readout on Bob's arm estimates Bob's bit, the opposite of Alice's.
         if references is None and self._run_config["attacked_arm"] == "B":

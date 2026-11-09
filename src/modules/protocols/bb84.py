@@ -140,7 +140,8 @@ class BB84(Protocol):
         return float(np.mean(self.bob_bits == ERASURE))
 
     def _reference_probe_states(self, attack, alice_basis):
-        """Eve's weighted probe states (2*p0*rho0, 2*p1*rho1) for Alice's bit in one basis.
+        """
+        Eve's weighted probe states (2*p0*rho0, 2*p1*rho1) for Alice's bit in one basis.
 
         rho_b is Eve's probe state for Alice's bit b, averaged over everything
         Eve does not know and conditioned on Bob detecting the signal, as in

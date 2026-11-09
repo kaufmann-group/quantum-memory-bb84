@@ -1,24 +1,21 @@
-"""Generalized dephasing in arbitrary finite dimension.
+"""
+Generalized dephasing channel.
 
-Source: https://quantumchannelzoo.org/channel/general-dephase
+Keeps the populations in a chosen basis of a d-level system and multiplies
+each coherence rho_ij by the overlap <phi_j|phi_i> of environment states.
 
-This implements the page's Kraus/isometry definition:
-    |i> -> |i> tensor |phi_i>,
-    K_a = sum_i <a|phi_i> |i><i|.
-Supply d normalized QuTiP environment kets |phi_i> of a common dimension >= 2.
-An optional orthonormal basis_vectors list selects the preserved system basis;
-otherwise the computational basis is used. One target is one d-level subsystem.
+A general dephasing channel, not restricted to one real qubit parameter.
 
-Complex-overlap convention: these Kraus operators multiply rho_ij by
-<phi_j|phi_i>. The page's displayed action reverses these inner-product
-indices; here the Kraus representation and isometry determine the convention.
+https://quantumchannelzoo.org/channel/general-dephase
 
-Example reproducing PhaseFlip(p):
-    phi0 = sqrt(1-p)*basis(2, 0) + sqrt(p)*basis(2, 1)
-    phi1 = sqrt(1-p)*basis(2, 0) - sqrt(p)*basis(2, 1)
-    channel = GeneralizedDephasing([phi0, phi1])
-Alternatively use from_correlation_matrix(C), where N(rho)_ij=C_ij*rho_ij
-in the preserved basis. C must be positive semidefinite with unit diagonal.
+Usage:
+    p = 0.2
+    phi0 = np.sqrt(1-p)*basis(2, 0) + np.sqrt(p)*basis(2, 1)
+    phi1 = np.sqrt(1-p)*basis(2, 0) - np.sqrt(p)*basis(2, 1)
+    GeneralizedDephasing([phi0, phi1]).apply(register, "E")   # same as PhaseFlip(p)
+
+    C = np.array([[1, 0.6], [0.6, 1]])   # N(rho)_01 = 0.6 * rho_01
+    bb84.key_generation(signal_channel=GeneralizedDephasing.from_correlation_matrix(C))
 """
 
 import numpy as np
@@ -30,24 +27,8 @@ __all__ = ["GeneralizedDephasing"]
 
 
 class GeneralizedDephasing(QuantumChannel):
-    """Generalized dephasing channel.
-
-    Keeps the populations in a chosen basis of a d-level system and multiplies
-    each coherence rho_ij by the overlap <phi_j|phi_i> of environment states.
-
-    A general dephasing channel, not restricted to one real qubit parameter.
-
-    Source:
-        https://quantumchannelzoo.org/channel/general-dephase
-
-    Usage:
-        p = 0.2
-        phi0 = np.sqrt(1-p)*basis(2, 0) + np.sqrt(p)*basis(2, 1)
-        phi1 = np.sqrt(1-p)*basis(2, 0) - np.sqrt(p)*basis(2, 1)
-        GeneralizedDephasing([phi0, phi1]).apply(register, "E")   # same as PhaseFlip(p)
-
-        C = np.array([[1, 0.6], [0.6, 1]])   # N(rho)_01 = 0.6 * rho_01
-        bb84.key_generation(signal_channel=GeneralizedDephasing.from_correlation_matrix(C))
+    """
+    Generalized dephasing channel.
     """
 
     num_targets = 1
@@ -103,7 +84,8 @@ class GeneralizedDephasing(QuantumChannel):
 
     @classmethod
     def from_correlation_matrix(cls, correlation_matrix, basis_vectors=None):
-        """Construct from C with N(rho)_ij = C_ij*rho_ij in the chosen basis.
+        """
+        Construct from C with N(rho)_ij = C_ij*rho_ij in the chosen basis.
 
         C is a d-by-d Hermitian positive-semidefinite matrix with C_ii=1.
         Numerical tolerance is 1e-12 (relative to spectral scale for eigenvalues).

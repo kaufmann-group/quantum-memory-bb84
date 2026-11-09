@@ -1,18 +1,18 @@
 """
 dephrasure quantum channel
 
-source:
-    https://quantumchannelzoo.org/channel/dephrasure
-    https://arxiv.org/abs/1806.08327
+Z-dephasing p followed by erasure q, both in [0, 1]. Output is a qutrit:
+N(rho) = (1-q) [(1-p) rho + p Z rho Z] + q |e><e|,  with |e> = |2>
+The shared register applies the map and recognizes the erasure flag;
+measurement returns 0, 1, or 2 (erasure).
 
-description:
-    Z-dephasing p followed by erasure q, both in [0, 1]. Output is a qutrit:
-        N(rho) = (1-q) [(1-p) rho + p Z rho Z] + q |e><e|,  with |e> = |2>
-    The shared register applies the map and recognizes the erasure flag;
-    measurement returns 0, 1, or 2 (erasure).
+https://quantumchannelzoo.org/channel/dephrasure
+https://arxiv.org/abs/1806.08327
 
-usage:
+Usage:
     Dephrasure(p=0.1, q=0.2).apply(register, targets="B")
+    bb84.key_generation(signal_channel=Dephrasure(p=0.05, q=0.1))
+    bb84.loss_rate()   # about q
 """
 
 from math import sqrt
@@ -27,21 +27,8 @@ __all__ = ["Dephrasure"]
 
 
 class Dephrasure(QuantumChannel):
-    """Dephrasure channel.
-
-    Z-dephasing with probability p followed by erasure with probability q;
-    the output is a qutrit whose level |2> flags a lost photon.
-
-    N_{p,q}: Z-dephasing p, then qubit erasure q (2 -> 3).
-
-    Source:
-        https://quantumchannelzoo.org/channel/dephrasure
-        https://arxiv.org/abs/1806.08327
-
-    Usage:
-        Dephrasure(p=0.1, q=0.2).apply(register, targets="B")
-        bb84.key_generation(signal_channel=Dephrasure(p=0.05, q=0.1))
-        bb84.loss_rate()   # about q
+    """
+    Dephrasure channel.        
     """
 
     num_targets = 1

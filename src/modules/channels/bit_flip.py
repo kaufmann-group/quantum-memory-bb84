@@ -1,15 +1,15 @@
 """
-bit-flip quantum channel
+Bit-flip Quantum Channel
 
-source:
-    https://quantumchannelzoo.org/channel/bit-flip
+Apply X with probability p where p is the flip probability
+N(rho) = (1-p) rho + p X rho X, with p in [0, 1]
 
-description:
-    apply X with probability p where p is the flip probability
-    N(rho) = (1-p) rho + p X rho X, with p in [0, 1]
+https://quantumchannelzoo.org/channel/bit-flip
 
-usage:
+Usage:
     BitFlip(p=0.2).apply(register, targets="B")
+    bb84.key_generation(signal_channel=BitFlip(0.05))
+    bb84.qber()   # about p/2: X-basis states are unaffected
 """
 
 from math import sqrt
@@ -23,17 +23,8 @@ __all__ = ["BitFlip"]
 
 
 class BitFlip(QuantumChannel):
-    """Bit-flip channel.
-
-    Applies X with probability p in [0, 1]: N(rho) = (1-p) rho + p X rho X.
-
-    Source:
-        https://quantumchannelzoo.org/channel/bit-flip
-
-    Usage:
-        BitFlip(p=0.2).apply(register, targets="B")
-        bb84.key_generation(signal_channel=BitFlip(0.05))
-        bb84.qber()   # about p/2: X-basis states are unaffected
+    """
+    Bit flip quantum channel
     """
 
     num_targets = 1

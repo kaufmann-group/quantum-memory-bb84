@@ -1,3 +1,28 @@
+"""
+Intercept-resend attack.
+
+Eve measures each signal in a basis chosen uniformly from `bases` and
+resends the state she found, for both BB84 and E91.
+
+Bases defaults to BB84's ("Z", "X"). For E91 Eve may instead use the
+protocol's key angles, e.g. (np.pi/4, np.pi/2). In BB84 a random-basis
+intercept gives Bob a sifted QBER of 1/4 and Eve 3/4 of the sifted bits.
+
+https://doi.org/10.1016/j.tcs.2014.05.025
+https://doi.org/10.1103/PhysRevLett.67.661
+
+Usage:
+    bb84 = BB84(seed=1, number_bits=1000)
+    bb84.key_generation(InterceptResendAttack(seed=43))
+    bb84.qber()                   # about 0.25
+    eve_key = bb84.eve_guesses()  # Eve's measured bit for every sifted round
+
+    e91 = E91(seed=1, number_pairs=1000)
+    e91.key_generation(InterceptResendAttack(bases=(np.pi/4, np.pi/2)))
+    e91.chsh()                    # |S| <= 2: the Bell test reveals Eve
+"""
+
+
 import secrets
 
 import numpy as np
@@ -8,36 +33,10 @@ from ..utils.quantum_register import ERASURE, UNKNOWN, QuantumRegister
 
 
 class InterceptResendAttack(Attack):
-    """Intercept-resend attack.
-
-    Eve measures each signal in a basis chosen uniformly from `bases` and
-    resends the state she found, for both BB84 and E91.
-
-    bases defaults to BB84's ("Z", "X"). For E91 Eve may instead use the
-    protocol's key angles, e.g. (np.pi/4, np.pi/2). In BB84 a random-basis
-    intercept gives Bob a sifted QBER of 1/4 and Eve 3/4 of the sifted bits.
-
-    Source:
-        C. H. Bennett and G. Brassard, "Quantum cryptography: Public key
-        distribution and coin tossing", Proc. IEEE Int. Conf. on Computers,
-        Systems and Signal Processing, Bangalore, 175-179 (1984); reprinted in
-        Theor. Comput. Sci. 560, 7-11 (2014).
-        https://doi.org/10.1016/j.tcs.2014.05.025
-        For E91: A. K. Ekert, "Quantum cryptography based on Bell's theorem",
-        Phys. Rev. Lett. 67, 661-663 (1991).
-        https://doi.org/10.1103/PhysRevLett.67.661
-
-    Usage:
-        bb84 = BB84(seed=1, number_bits=1000)
-        bb84.key_generation(InterceptResendAttack(seed=43))
-        bb84.qber()                   # about 0.25
-        eve_key = bb84.eve_guesses()  # Eve's measured bit for every sifted round
-
-        e91 = E91(seed=1, number_pairs=1000)
-        e91.key_generation(InterceptResendAttack(bases=(np.pi/4, np.pi/2)))
-        e91.chsh()                    # |S| <= 2: the Bell test reveals Eve
     """
-
+    Intercept-resend attack.
+    """
+    
     def __init__(self, seed=secrets.randbits(128), bases=("Z", "X")): # bases defaults to BB84's ("Z", "X")
         bases = tuple(bases)
         if not bases or not all(_is_basis(b) for b in bases):

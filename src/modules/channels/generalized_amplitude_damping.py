@@ -1,12 +1,15 @@
-"""Generalized amplitude damping with the Zoo's gamma, N convention.
+"""Generalized amplitude damping channel.
 
-Source: https://quantumchannelzoo.org/channel/generalized_amplitude
-gamma in [0, 1] controls relaxation; N in [0, 1] is the equilibrium
-excited-state population, NOT the ground-state population.
-The excited population evolves as rho11 -> (1-gamma)*rho11 + gamma*N.
-N=0 recovers amplitude damping. gamma=1 resets to diag(1-N, N).
+Relaxes a qubit at rate gamma toward the thermal state diag(1-N, N), i.e.
+amplitude damping into a finite-temperature environment.
 
-Usage: GeneralizedAmplitudeDamping(gamma=0.2, N=0.1).apply(register, "E")
+A_{gamma,N}, using all four Kraus operators from the source.
+
+https://quantumchannelzoo.org/channel/generalized_amplitude
+
+Usage:
+    GeneralizedAmplitudeDamping(gamma=0.2, N=0.1).apply(register, "E")
+    bb84.key_generation(FGGNPAttack(), memory_channel=GeneralizedAmplitudeDamping(0.2, 0.1))
 """
 
 from math import sqrt
@@ -20,19 +23,8 @@ __all__ = ["GeneralizedAmplitudeDamping"]
 
 
 class GeneralizedAmplitudeDamping(QuantumChannel):
-    """Generalized amplitude damping channel.
-
-    Relaxes a qubit at rate gamma toward the thermal state diag(1-N, N), i.e.
-    amplitude damping into a finite-temperature environment.
-
-    A_{gamma,N}, using all four Kraus operators from the source.
-
-    Source:
-        https://quantumchannelzoo.org/channel/generalized_amplitude
-
-    Usage:
-        GeneralizedAmplitudeDamping(gamma=0.2, N=0.1).apply(register, "E")
-        bb84.key_generation(FGGNPAttack(), memory_channel=GeneralizedAmplitudeDamping(0.2, 0.1))
+    """
+    Generalized amplitude damping channel.
     """
 
     num_targets = 1

@@ -1,18 +1,25 @@
-"""Economical asymmetric 1-to-2 phase-covariant cloning attack for BB84.
-
-An equatorial (X-Y plane) cloner is conjugated by a single-qubit X rotation
-so that it clones the actual BB84 states in the X-Z plane. Bob receives the
-first approximate clone; Eve stores the second as her probe. The interaction
-uses no additional ancilla beyond Eve's blank qubit.
-
-For the four BB84 states, the ideal clone fidelities are
-    F_B = (1 + cos(theta))/2, F_E = (1 + sin(theta))/2.
-The symmetric cloner uses theta=pi/4. This is not a universal cloning machine.
-
-References:
-    Bruß et al., Physical Review A 62, 012302 (2000).
-    Niu and Griffiths, Physical Review A 60, 2764 (1999).
 """
+Phase-covariant cloning attack.
+
+Eve runs an economical, asymmetric 1-to-2 phase-covariant cloner on each
+signal: Bob receives one approximate copy and Eve keeps the other, which
+she measures in Alice's announced basis after sifting.
+
+theta controls the asymmetric tradeoff between Bob's and Eve's fidelities:
+theta=0 gives Bob a perfect copy; theta=pi/2 gives Eve a perfect copy.
+
+Source:
+    https://doi.org/10.1103/PhysRevA.60.2764
+    https://doi.org/10.1103/PhysRevA.62.012302
+
+Usage:
+    bb84 = BB84(seed=1, number_bits=1000)
+    bb84.key_generation(PhaseCovariantCloningAttack(theta=np.pi/4))
+    bb84.qber()                    # about (1 - cos(theta))/2 ≈ 0.15
+    guesses = bb84.eve_guesses()
+    (guesses == bb84.alice_key).mean()   # about (1 + sin(theta))/2 ≈ 0.85
+"""
+
 
 from numbers import Real
 import secrets
@@ -25,29 +32,8 @@ from ..utils.quantum_register import ERASURE, UNKNOWN
 
 
 class PhaseCovariantCloningAttack(Attack):
-    """Phase-covariant cloning attack.
-
-    Eve runs an economical, asymmetric 1-to-2 phase-covariant cloner on each
-    signal: Bob receives one approximate copy and Eve keeps the other, which
-    she measures in Alice's announced basis after sifting.
-
-    theta controls the asymmetric tradeoff between Bob's and Eve's fidelities:
-    theta=0 gives Bob a perfect copy; theta=pi/2 gives Eve a perfect copy.
-
-    Source:
-        C.-S. Niu and R. B. Griffiths, "Two-qubit copying machine for
-        economical quantum eavesdropping", Phys. Rev. A 60, 2764-2776 (1999).
-        https://doi.org/10.1103/PhysRevA.60.2764
-        See also D. Bruß, M. Cinchetti, G. M. D'Ariano and C. Macchiavello,
-        "Phase-covariant quantum cloning", Phys. Rev. A 62, 012302 (2000).
-        https://doi.org/10.1103/PhysRevA.62.012302
-
-    Usage:
-        bb84 = BB84(seed=1, number_bits=1000)
-        bb84.key_generation(PhaseCovariantCloningAttack(theta=np.pi/4))
-        bb84.qber()                    # about (1 - cos(theta))/2 ≈ 0.15
-        guesses = bb84.eve_guesses()
-        (guesses == bb84.alice_key).mean()   # about (1 + sin(theta))/2 ≈ 0.85
+    """
+    Phase-covariant cloning attack.
     """
 
     probe_labels = ("E",)

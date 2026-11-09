@@ -1,10 +1,14 @@
-"""Phase-flip (Z-dephasing) channel.
+"""Phase-flip channel.
 
-Source: https://quantumchannelzoo.org/channel/phase-flip
-Action: N(rho) = (1-p) rho + p Z rho Z, with p in [0, 1].
-Coherences are multiplied by 1-2p: p=1/2 completely dephases;
-p=1 applies the unitary Z and does not completely dephase.
-Usage: PhaseFlip(p=0.2).apply(register, targets="E")
+Applies Z with probability p in [0, 1], which multiplies the coherences by
+1-2p (Z-dephasing).
+
+https://quantumchannelzoo.org/channel/phase-flip
+
+Usage:
+    PhaseFlip(p=0.2).apply(register, targets="E")
+    bb84.key_generation(signal_channel=PhaseFlip(0.1))
+    bb84.qber()   # about p/2: Z-basis states are unaffected
 """
 
 from math import sqrt
@@ -18,18 +22,8 @@ __all__ = ["PhaseFlip"]
 
 
 class PhaseFlip(QuantumChannel):
-    """Phase-flip channel.
-
-    Applies Z with probability p in [0, 1], which multiplies the coherences by
-    1-2p (Z-dephasing).
-
-    Source:
-        https://quantumchannelzoo.org/channel/phase-flip
-
-    Usage:
-        PhaseFlip(p=0.2).apply(register, targets="E")
-        bb84.key_generation(signal_channel=PhaseFlip(0.1))
-        bb84.qber()   # about p/2: Z-basis states are unaffected
+    """
+    Phase-flip channel.
     """
 
     num_targets = 1

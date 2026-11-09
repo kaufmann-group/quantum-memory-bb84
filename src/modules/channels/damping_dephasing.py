@@ -1,4 +1,19 @@
-"""Joint damping-dephasing qubit channel."""
+"""
+Damping-dephasing channel.
+
+Joint amplitude damping (probability g) and dephasing (probability p) in a
+single channel, using three Kraus operators.
+
+p in [0, 1/2], the dephasing probability
+g in [0, 1] the amplitude-damping probability
+
+https://quantumchannelzoo.org/channel/damping_dephasing
+https://arxiv.org/abs/2405.06231 (eq. 14)
+
+Usage:
+    DampingDephasing(p=0.1, g=0.2).apply(register, targets="B")
+    e91.key_generation(bob_channel=DampingDephasing(p=0.05, g=0.1))
+"""
 
 from math import sqrt
 from numbers import Real
@@ -11,22 +26,8 @@ __all__ = ["DampingDephasing"]
 
 
 class DampingDephasing(QuantumChannel):
-    """Damping-dephasing channel.
-
-    Joint amplitude damping (probability g) and dephasing (probability p) in a
-    single channel, using three Kraus operators.
-
-    Parameters:
-        p in [0, 1/2], the dephasing probability
-        g in [0, 1] the amplitude-damping probability
-
-    Source:
-        https://quantumchannelzoo.org/channel/damping_dephasing
-        https://arxiv.org/abs/2405.06231 (eq. 14)
-
-    Usage:
-        DampingDephasing(p=0.1, g=0.2).apply(register, targets="B")
-        e91.key_generation(bob_channel=DampingDephasing(p=0.05, g=0.1))
+    """
+    Joint damping-dephasing qubit channel
     """
 
     num_targets = 1

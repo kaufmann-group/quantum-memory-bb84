@@ -1,12 +1,28 @@
-"""Partial-SWAP probe attack with a tunable signal-probe interaction.
+"""Partial-SWAP attack.
 
-The interaction U(theta) = cos(theta)*I - i*sin(theta)*SWAP transfers quantum
-information from Bob's signal to Eve's initially blank |0> probe. This is a
-parameterized attack construction, not a claim of an optimal BB84 strategy.
+Eve couples a blank |0> probe to the signal with exp(-i*theta*SWAP) =
+cos(theta)*I - i*sin(theta)*SWAP, which moves part of the signal's state
+into her probe; after sifting she reads the probe in Alice's basis.
 
-After sifting Eve measures her probe in Alice's announced basis. The optional
-BB84.eve_guesses(readout="optimal") instead gives the noise-adapted Helstrom
-measurement on the stored probe.
+theta=0 leaves the signal unchanged; theta=pi/2 swaps the signal into
+Eve's probe, up to phases. Intermediate angles continuously interpolate.
+
+Source:
+    The partial-swap interaction is analyzed (as a system-reservoir
+    coupling) in M. Ziman, P. Štelmachovič, V. Bužek, M. Hillery,
+    V. Scarani and N. Gisin, "Diluting quantum information: An analysis
+    of information transfer in system-reservoir interactions",
+    Phys. Rev. A 65, 042105 (2002).
+    https://doi.org/10.1103/PhysRevA.65.042105
+    Using it as a BB84 probe is this package's construction, not a
+    published optimal attack.
+
+Usage:
+    bb84 = BB84(seed=1, number_bits=1000)
+    bb84.key_generation(PartialSwapAttack(theta=np.pi/8))
+    bb84.qber()                    # grows with theta
+    eve_key = bb84.eve_guesses()   # probe read in Alice's basis
+    bb84.eve_optimal_success()     # exact Helstrom bound per basis
 """
 
 from numbers import Real
@@ -20,31 +36,8 @@ from ..utils.quantum_register import ERASURE, UNKNOWN
 
 
 class PartialSwapAttack(Attack):
-    """Partial-SWAP attack.
-
-    Eve couples a blank |0> probe to the signal with exp(-i*theta*SWAP) =
-    cos(theta)*I - i*sin(theta)*SWAP, which moves part of the signal's state
-    into her probe; after sifting she reads the probe in Alice's basis.
-
-    theta=0 leaves the signal unchanged; theta=pi/2 swaps the signal into
-    Eve's probe, up to phases. Intermediate angles continuously interpolate.
-
-    Source:
-        The partial-swap interaction is analyzed (as a system-reservoir
-        coupling) in M. Ziman, P. Štelmachovič, V. Bužek, M. Hillery,
-        V. Scarani and N. Gisin, "Diluting quantum information: An analysis
-        of information transfer in system-reservoir interactions",
-        Phys. Rev. A 65, 042105 (2002).
-        https://doi.org/10.1103/PhysRevA.65.042105
-        Using it as a BB84 probe is this package's construction, not a
-        published optimal attack.
-
-    Usage:
-        bb84 = BB84(seed=1, number_bits=1000)
-        bb84.key_generation(PartialSwapAttack(theta=np.pi/8))
-        bb84.qber()                    # grows with theta
-        eve_key = bb84.eve_guesses()   # probe read in Alice's basis
-        bb84.eve_optimal_success()     # exact Helstrom bound per basis
+    """
+    Partial-SWAP attack.
     """
 
     probe_labels = ("E",)
