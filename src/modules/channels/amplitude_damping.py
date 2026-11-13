@@ -4,7 +4,7 @@ Amplitude Damping Quantum Channel
 Relaxation of |1> to |0> with probability gamma in [0, 1]
 K0 = |0><0| + sqrt(1-gamma)|1><1|,  K1 = sqrt(gamma)|0><1|.
 
-https://quantumchannelzoo.org/channel/amplitude-damping    
+https://quantumchannelzoo.org/channel/amplitude-damping section 4.7.5 
 
 Usage:
     AmplitudeDamping(gamma=0.2).apply(register, targets="E")
