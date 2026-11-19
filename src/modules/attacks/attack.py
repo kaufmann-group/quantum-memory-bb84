@@ -160,7 +160,8 @@ class Attack(ABC):
         return bases, mask
 
     def measure_after_sifting(self, alice_bases, sifted_mask, guess_on_erasure=False, reference_states=None):
-        """Return Eve's guesses for the rounds in BB84.sifted_mask.
+        """
+        Return Eve's guesses for the rounds in BB84.sifted_mask.
 
         The result aligns element-by-element with BB84.alice_key. Prefer
         BB84.eve_guesses(), which passes the correct arrays automatically.
